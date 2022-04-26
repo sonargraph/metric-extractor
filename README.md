@@ -1,3 +1,4 @@
+[![CI](https://github.com/sonargraph/metric-extractor/actions/workflows/build.yml/badge.svg)](https://github.com/sonargraph/metric-extractor/actions/workflows/build.yml)
 # Sonargraph System Metric Extractor
 
 This utility program takes a [Sonargraph](https://www.hello2morrow.com/products/sonargraph) XML report and extracts all
