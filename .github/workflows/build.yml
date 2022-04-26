@@ -30,7 +30,7 @@ jobs:
         run: mvn clean package
       # Create Sonargraph XML report
       - name: Sonargraph Report
-        run: mvn compile com.hello2morrow:sonargraph-maven-plugin:12.2.0:dynamic-report -Dsonargraph.autoUpdate=true -Dsonargraph.activationCode=1E05-733B-3BCD-E9A7 -Dsonargraph.reportFormat=xml -Dsonargraph.reportName=${{ env.GITHUB_REF_NAME }}
+        run: mvn compile com.hello2morrow:sonargraph-maven-plugin:12.2.0:dynamic-report -Dmaven.repo.remote=https://mvnrepository.com/repos/hello2morrow -Dsonargraph.autoUpdate=true -Dsonargraph.activationCode=1E05-733B-3BCD-E9A7 -Dsonargraph.reportFormat=xml -Dsonargraph.reportName=${{ env.GITHUB_REF_NAME }}
       - name: Download metric extractor
         run: wget https://github.com/sonargraph/metric-extractor/releases/download/1.0/MetricExtractor-1.0.jar
       - name: Extract metrics from  XML report
