@@ -46,4 +46,9 @@ jobs:
         run: wget https://github.com/sonargraph/metric-extractor/releases/download/1.0/MetricExtractor-1.0-jar-with-dependencies.jar
       - name: Extract metrics from  XML report
         run: java -jar MetricExtractor-1.0-jar-with-dependencies.jar target/sonargraph/${{env.GIT_BRANCH_NAME}}.xml
+       -name: Publish json metrics file
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{env.GIT_BRANCH_NAME}}-metrics.json
+          path: target/sonargraph/${{env.GIT_BRANCH_NAME}}.json
 
