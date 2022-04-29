@@ -43,7 +43,7 @@ jobs:
       - name: List reports
         run: ls -l target/sonargraph
       - name: Download metric extractor
-        run: wget https://github.com/sonargraph/metric-extractor/releases/download/1.0/MetricExtractor-1.0.jar
+        run: wget https://github.com/sonargraph/metric-extractor/releases/download/1.0/MetricExtractor-1.0-jar-with-dependencies.jar
       - name: Extract metrics from  XML report
-        run: java -jar MetricExtractor-1.0.jar target/sonargraph/${{env.GIT_BRANCH_NAME}}.xml
+        run: java -jar MetricExtractor-1.0-jar-with-dependencies.jar target/sonargraph/${{env.GIT_BRANCH_NAME}}.xml
 
