@@ -25,6 +25,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
         uses: actions/checkout@v3
+      - uses: nelonoel/branch-name@v1
       - name: Create Maven settings
         uses: whelk-io/maven-settings-xml-action@v20
         with:
@@ -34,9 +35,9 @@ jobs:
         run: mvn clean package
       # Create Sonargraph XML report
       - name: Sonargraph Report
-        run: mvn compile com.hello2morrow:sonargraph-maven-plugin:12.2.0:dynamic-report -Dsonargraph.autoUpdate=true -Dsonargraph.activationCode=1E05-733B-3BCD-E9A7 -Dsonargraph.reportFormat=xml -Dsonargraph.reportName=${{ env.GITHUB_REF_NAME }}
+        run: mvn compile com.hello2morrow:sonargraph-maven-plugin:12.2.0:dynamic-report -Dsonargraph.autoUpdate=true -Dsonargraph.activationCode=1E05-733B-3BCD-E9A7 -Dsonargraph.reportFormat=xml -Dsonargraph.reportName=${BRANCH_NAME}
       - name: Download metric extractor
         run: wget https://github.com/sonargraph/metric-extractor/releases/download/1.0/MetricExtractor-1.0.jar
       - name: Extract metrics from  XML report
-        run: java -jar MetricExtractor-1.0.jar target/sonargraph/${{ env.GITHUB_REF_NAME }}.xml
+        run: java -jar MetricExtractor-1.0.jar target/sonargraph/${BRANCH_NAME}.xml
 
