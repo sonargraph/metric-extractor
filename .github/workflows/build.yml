@@ -25,6 +25,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
         uses: actions/checkout@v3
+      - run: npm ci
       - uses: nelonoel/branch-name@v1
       - name: Create Maven settings
         uses: whelk-io/maven-settings-xml-action@v20
