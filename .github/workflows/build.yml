@@ -23,8 +23,32 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Git branch name
+        id: git-branch-name
+        uses: EthanSK/git-branch-name-action@v1
+      - name: Echo the branch name
+        run: echo "Branch name ${GIT_BRANCH_NAME}"
+      - name: Create Maven settings
+        uses: whelk-io/maven-settings-xml-action@v20
+        with:
+          plugin_repositories: '[{ "id": "hello2morrow-repository", "url": "https://maven.hello2morrow.com/repository" }]'
       # Build and test
       - name: Build
         run: mvn clean package
+      # Create Sonargraph XML report
+      - name: Sonargraph Report
+        run: mvn compile com.hello2morrow:sonargraph-maven-plugin:12.2.0:dynamic-report -Dsonargraph.autoUpdate=true -Dsonargraph.activationCode=1E05-733B-3BCD-E9A7 -Dsonargraph.reportFormat=xml -Dsonargraph.reportFileName=${{env.GIT_BRANCH_NAME}}
+      - name: List reports
+        run: ls -l target/sonargraph
+      - name: Download metric extractor
+        run: wget https://github.com/sonargraph/metric-extractor/releases/download/1.0/MetricExtractor-1.0-jar-with-dependencies.jar
+      - name: Extract metrics from  XML report
+        run: java -jar MetricExtractor-1.0-jar-with-dependencies.jar target/sonargraph/${{env.GIT_BRANCH_NAME}}.xml
+      - name: Publish json metrics file
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{env.GIT_BRANCH_NAME}}-metrics.json
+          path: target/sonargraph/${{env.GIT_BRANCH_NAME}}.json
+
