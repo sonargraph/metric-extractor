@@ -55,7 +55,7 @@ public class MetricExtractor
         {
             for (IMetricValue val : proc.getMetricValues(IMetricLevel.SYSTEM, metricId.getName()).values())
             {
-                systemMetrics.put(val.getId().getName(), val.getValue());
+                systemMetrics.put(val.getId().getProvider().getName() + ":" + val.getId().getName(), val.getValue());
             }
         }
 
@@ -73,7 +73,7 @@ public class MetricExtractor
                 {
                     IMetricValue val = entry.getValue();
 
-                    moduleMetrics.put(val.getId().getName(), val.getValue());
+                    moduleMetrics.put(val.getId().getProvider().getName() + ":" + val.getId().getName(), val.getValue());
                 }
             }
             moduleMetrics.put("moduleName", module.getName());
