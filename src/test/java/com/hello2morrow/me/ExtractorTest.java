@@ -28,7 +28,7 @@ public class ExtractorTest
     public void testMetricExtractorJson()
     {
         MetricExtractor me = new MetricExtractor();
-        String jsonFileName = me.process("src/test/data/Sonargraph_2022-04-22_11-54-43.xml");
+        String jsonFileName = me.process("src/test/data/Sonargraph_2022-04-22_11-54-43.xml", null, null, null, false);
 
         assertNotNull(jsonFileName);
         try
