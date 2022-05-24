@@ -4,11 +4,18 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,14 +35,52 @@ public class MetricExtractor
     public static void main(String[] args)
     {
         MetricExtractor me = new MetricExtractor();
+        String host = null;
+        String org = null;
+        String branch = null;
+        String fileName = null;
+        boolean useId = false;
 
-        for (String xmlFileName : args)
+        for (String arg : args)
         {
-            me.process(xmlFileName);
+            if (arg.startsWith("-host="))
+            {
+                host = arg.substring(6);
+            }
+            else if (arg.startsWith("-org="))
+            {
+                org = arg.substring(5);
+            }
+            else if (arg.startsWith("-branch="))
+            {
+                branch = arg.substring(8);
+            }
+            else if (arg.equals("-useId"))
+            {
+                useId = true;
+            }
+            else if (fileName == null && !arg.startsWith("-"))
+            {
+                fileName = arg;
+            }
+            else
+            {
+                System.err.println("Invalid parameter: " + arg);
+                System.exit(1);
+            }
+        }
+        if (fileName != null)
+        {
+            me.process(fileName, host, org, branch, useId);
+        }
+        else
+        {
+            System.err.println("Missing file parameter for Sonargraph XML report");
+            System.exit(1);
         }
     }
 
-    Map<String, Object> extractMetrics(String xmlFileName)
+    @NotNull Map<String, Object> extractMetrics(@NotNull String xmlFileName)
     {
         final ISonargraphSystemController controller = ControllerFactory.createController();
         final Result result = controller.loadSystemReport(new File(xmlFileName));
@@ -44,7 +89,6 @@ public class MetricExtractor
         {
             System.err.println(result.toString());
             System.exit(1);
-            return null;
         }
 
         ISystemInfoProcessor proc = controller.createSystemInfoProcessor();
@@ -99,7 +143,7 @@ public class MetricExtractor
         return systemMetrics;
     }
 
-    String process(String xmlFileName)
+    String process(@NotNull String xmlFileName, String host, String org, String branch, boolean useId)
     {
         Map<String, Object> systemMetrics = extractMetrics(xmlFileName);
         ObjectMapper objectMapper = new ObjectMapper();
@@ -107,22 +151,74 @@ public class MetricExtractor
         try
         {
             String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(systemMetrics);
-            String jsonFileName = xmlFileName.substring(0, xmlFileName.length()-3) + "json";
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFileName)))
+            if (host == null)
             {
-                writer.write(json);
+                String jsonFileName = xmlFileName.substring(0, xmlFileName.length()-3) + "json";
+
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFileName)))
+                {
+                    writer.write(json);
+                }
+                catch (IOException e)
+                {
+                    System.err.println(e.getMessage());
+                    System.exit(1);
+                }
+                return jsonFileName;
             }
-            catch (IOException e)
+            else
             {
-                System.err.println(e.getMessage());
+                uploadJsonData(json, host, org, branch, useId);
             }
-            return jsonFileName;
         }
         catch (JsonProcessingException e)
         {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
+            System.exit(1);
         }
         return null;
+    }
+
+    private void uploadJsonData(@NotNull String jsonData, @NotNull String host, String org, String branch, boolean useId)
+    {
+        HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .connectTimeout(Duration.ofMinutes(2))
+                .build();
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(host + "/upload/sonargraphJsonReport"))
+                .header("Content-Type", "application/json")
+                .timeout(Duration.ofMinutes(2))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonData));
+
+        if (org != null && org.length() > 0)
+        {
+            builder.header("X-Organization", org);
+        }
+        if (branch != null && branch.length() > 0)
+        {
+            builder.header("X-SonargraphBranch", branch);
+        }
+        if (useId)
+        {
+            builder.header("X-UseSonargraphId", "true");
+        }
+        try
+        {
+            HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200)
+            {
+                System.err.println(String.format("Request failed with status %d: %s", response.statusCode(), response.body()));
+                System.exit(1);
+            }
+        }
+        catch (Exception e)
+        {
+            System.err.println("Cannot send request: " + e.getMessage());
+            System.exit(1);
+        }
     }
 }
