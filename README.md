@@ -1,4 +1,6 @@
 [![CI](https://github.com/sonargraph/metric-extractor/actions/workflows/build.yml/badge.svg)](https://github.com/sonargraph/metric-extractor/actions/workflows/build.yml)
+![badge](https://img.shields.io/endpoint?url=https://enterprise.hello2morrow.com/badges/MetricExtractor/Core:CoreMaintainabilityLevel)
+![badge](https://img.shields.io/endpoint?url=https://enterprise.hello2morrow.com/badges/MetricExtractor/Core:CoreLinesOfCode)
 # Sonargraph System Metric Extractor
 
 This utility program takes a [Sonargraph](https://www.hello2morrow.com/products/sonargraph) XML report and extracts all
