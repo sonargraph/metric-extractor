@@ -30,6 +30,6 @@ jobs:
         run: mvn clean package
       # Create Sonargraph XML report
       - name: Sonargraph Report and Upload
-        uses: sonargraph/sonargraph-maven-action@develop
+        uses: sonargraph/sonargraph-maven-action@v1.0
         with:
           org: hello2morrow GmbH
